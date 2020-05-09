@@ -36,6 +36,9 @@ export function handleParams(path: string) {
 export type FindParamResult = {
   [key: string]: string;
 };
+
+// Needs to handle these special cases
+// http://localhost:1447/gamer/1232342424
 export function findParam(
   path: string,
   { startIndex, paramKeys }: ParamData,
@@ -48,6 +51,7 @@ export function findParam(
       const curr = path[x];
       if (curr === "/") {
         start = x + 1;
+        value = "";
         break;
       }
       value = value + curr;
