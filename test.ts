@@ -5,11 +5,13 @@ const server = new Server({
   port: 1447,
 });
 
-server.get("/api/user", (req) => {
-  req.respond({ status: 200, body: "gamer triggered" });
+server.get("/api/user", ({ req, params }) => {
+  console.log(params);
+  req.respond({ status: 200, body: "api user triggered" });
 });
-server.get("/gamer/:id/:user", (req) => {
-  req.respond({ status: 200, body: "gamer triggered" });
+server.get("/gamer/:id/:user", ({ req, params }) => {
+  console.log(params);
+  req.respond({ status: 200, body: "gamer was triggered" });
 });
 
 await server.start();

@@ -19,3 +19,38 @@ export const getParams = (path: string, start: number): ParamData[] => {
   }
   return params;
 };
+
+export function handleParams(path: string) {
+  const start = path.indexOf(":");
+  let paramData: ParamData[] | null = null;
+  let actualPath = path;
+  if (start !== -1) {
+    paramData = getParams(path, start);
+    if (paramData.length) {
+      const { index } = paramData[0];
+      actualPath = path.slice(0, index);
+    }
+  }
+  return { actualPath, paramData };
+}
+
+export type FindParamResult = {
+  [key: string]: string;
+};
+export function findParam(path: string, pData: ParamData[]): FindParamResult {
+  return pData.reduce((obj: FindParamResult, param) => {
+    const key = param.param;
+    let value = "";
+    for (let x = param.index; x < path.length; x++) {
+      const curr = path[x];
+      if (curr === "/") {
+        break;
+      } else {
+        value = value + curr;
+      }
+    }
+    // console.log({ key, value });
+    obj[key] = value;
+    return obj;
+  }, {});
+}
