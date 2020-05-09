@@ -1,11 +1,13 @@
-import { ParamData } from "./server_request.ts";
+export type ParamData = {
+  paramKeys: string[];
+  startIndex: number;
+};
 
-export const getParams = (path: string, start: number): ParamData[] => {
-  const params = [];
+export const getParams = (path: string, start: number): ParamData => {
+  const paramKeys = [];
   for (let x = start; x < path.length; x++) {
     const curr = path[x];
     if (curr === ":") {
-      const startOfParam = x;
       let param = "";
       for (let i = x + 1; i < path.length; i++) {
         if (path[i] === "/") {
@@ -14,22 +16,19 @@ export const getParams = (path: string, start: number): ParamData[] => {
         }
         param = param + path[i];
       }
-      if (param.length) params.push({ param, index: startOfParam });
+      if (param.length) paramKeys.push(param);
     }
   }
-  return params;
+  return { paramKeys, startIndex: start };
 };
 
 export function handleParams(path: string) {
   const start = path.indexOf(":");
-  let paramData: ParamData[] | null = null;
+  let paramData: ParamData | null = null;
   let actualPath = path;
   if (start !== -1) {
     paramData = getParams(path, start);
-    if (paramData.length) {
-      const { index } = paramData[0];
-      actualPath = path.slice(0, index);
-    }
+    actualPath = path.slice(0, start);
   }
   return { actualPath, paramData };
 }
@@ -37,20 +36,24 @@ export function handleParams(path: string) {
 export type FindParamResult = {
   [key: string]: string;
 };
-export function findParam(path: string, pData: ParamData[]): FindParamResult {
-  return pData.reduce((obj: FindParamResult, param) => {
-    const key = param.param;
+export function findParam(
+  path: string,
+  { startIndex, paramKeys }: ParamData,
+) {
+  let start = startIndex;
+  const result: any = {};
+  for (const key of paramKeys) {
     let value = "";
-    for (let x = param.index; x < path.length; x++) {
+    for (let x = start; x < path.length; x++) {
       const curr = path[x];
       if (curr === "/") {
+        start = x + 1;
         break;
-      } else {
-        value = value + curr;
       }
+      value = value + curr;
     }
-    // console.log({ key, value });
-    obj[key] = value;
-    return obj;
-  }, {});
+    result[key] = value;
+  }
+  console.log(result);
+  return result;
 }
