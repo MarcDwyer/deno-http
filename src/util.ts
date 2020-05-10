@@ -51,13 +51,12 @@ export function findParam(
       const curr = path[x];
       if (curr === "/") {
         start = x + 1;
-        value = "";
         break;
       }
       value = value + curr;
     }
     result[key] = value;
+    value = "";
   }
-  console.log(result);
   return result;
 }

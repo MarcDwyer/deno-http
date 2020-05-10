@@ -45,6 +45,5 @@ export default class Server {
       func,
       ...paramResults,
     };
-    console.log(this.paths);
   }
 }
