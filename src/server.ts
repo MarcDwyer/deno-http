@@ -8,9 +8,8 @@ type ServerConfig = {
   hostname?: string;
   port: number;
 };
-type Routes = {
-  [routes: string]: SubRoute;
-};
+type Routes = Map<string, SubRoute>;
+
 type SubRoute = {
   func: (request: IServerRequest) => void;
   paramData: ParamData | null;
@@ -22,12 +21,13 @@ interface IServerRequest {
 }
 
 export default class Server {
-  private paths: Routes = {};
+  private paths: Routes = new Map();
   constructor(private config: ServerConfig) {}
   public async start() {
     for await (const req of serve(this.config)) {
-      if (req.url in this.paths) {
-        const found = this.paths[req.url];
+      if (this.paths.has(req.url)) {
+        const found = this.paths.get(req.url);
+        //@ts-ignore
         found.func({ req, params: undefined });
       } else {
         this.handleRoute(req);
@@ -37,17 +37,17 @@ export default class Server {
   }
   public use(route: string, func: (req: IServerRequest) => void) {
     const paramResults = handleParams(route);
-    this.paths[paramResults.actualPath] = {
+    this.paths.set(route, {
       func,
       ...paramResults,
-    };
+    });
   }
   private handleRoute(req: ServerRequest) {
     const { url } = req;
     let pathData: SubRoute | null = null;
-    for (const [k, v] of Object.entries(this.paths)) {
-      if (url.startsWith(k)) {
-        pathData = v;
+    for (const path of this.paths.values()) {
+      if (path.actualPath.startsWith(url)) {
+        pathData = path;
       }
     }
     if (pathData) {
