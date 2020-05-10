@@ -1,7 +1,7 @@
 import {
   serve,
   ServerRequest,
-} from "https://deno.land/std@v0.42.0/http/server.ts";
+} from "https://deno.land/std/http/server.ts";
 import { handleParams, findParam, FindParamResult, ParamData } from "./util.ts";
 
 type ServerConfig = {
@@ -19,28 +19,28 @@ interface IServerRequest {
   req: ServerRequest;
   params: FindParamResult | undefined;
 }
+
 export default class Server {
-  private serverConfig: ServerConfig;
-  private paths: Routes;
-  constructor(config: ServerConfig) {
-    this.serverConfig = config;
-    this.paths = {};
-  }
-  async start() {
-    for await (const req of serve(this.serverConfig)) {
+  private paths: Routes = {};
+  constructor(private config: ServerConfig) {}
+  public async start() {
+    for await (const req of serve(this.config)) {
+      let found = false;
       for (const [k, v] of Object.entries(this.paths)) {
         if (req.url.startsWith(k)) {
           let finalParams: FindParamResult | undefined;
           if (v.paramData && v.paramData.paramKeys.length) {
             finalParams = findParam(req.url, v.paramData);
           }
+          found = true;
           v.func({ req, params: finalParams });
         }
       }
+      if (!found) req.respond({ status: 400, body: "Route not found" });
     }
   }
-  get(path: string, func: (req: IServerRequest) => void) {
-    const paramResults = handleParams(path);
+  public use(route: string, func: (req: IServerRequest) => void) {
+    const paramResults = handleParams(route);
     this.paths[paramResults.actualPath] = {
       func,
       ...paramResults,
