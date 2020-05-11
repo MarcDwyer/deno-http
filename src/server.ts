@@ -1,7 +1,7 @@
 import {
   serve,
   ServerRequest,
-} from "https://deno.land/std/http/server.ts";
+} from "https://deno.land/std@0.50.0/http/server.ts";
 import { handleParams, findParam, FindParamResult, ParamData } from "./util.ts";
 
 type ServerConfig = {
@@ -46,7 +46,7 @@ export default class Server {
     const { url } = req;
     let pathData: SubRoute | null = null;
     for (const path of this.paths.values()) {
-      if (path.actualPath.startsWith(url)) {
+      if (url.startsWith(path.actualPath)) {
         pathData = path;
       }
     }
