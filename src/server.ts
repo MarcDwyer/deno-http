@@ -35,7 +35,7 @@ export default class Server {
       //      if (!found) req.respond({ status: 400, body: "Route not found" });
     }
   }
-  public use(route: string, func: (req: IServerRequest) => void) {
+  public handle(route: string, func: (req: IServerRequest) => void) {
     const paramResults = handleParams(route);
     this.paths.set(route, {
       func,
